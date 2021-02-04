@@ -46,3 +46,30 @@ const door = new Security(new LabDoor());
 door.open(INVALID_PASSWORD); // Доступ запрещен, неверный пароль
 door.open(PASSWORD); // Здесь что-то происходит
 door.close(); // Закрытие канала
+
+/**
+ * *! Реализация паттерна на ES6 Proxy
+ */
+
+function networkFetch(url) {
+  return `${url} - Response from network`;
+}
+
+// ES6 Proxy API = new Proxy(target, handler);
+
+let cache = [];
+
+const proxiedNetworkFetch = new Proxy(networkFetch, {
+  apply(target, thisArg, args) {
+    const urlParam = args[0];
+    if (cache.includes(urlParam)) {
+      return `${urlParam} - Response from cache`;
+    } else {
+      cache.push(urlParam);
+      return Reflect.apply(target, thisArg, args);
+    }
+  },
+});
+
+console.log(proxiedNetworkFetch("dogPic.jpg")); // 'dogPic.jpg - Response from network'
+console.log(proxiedNetworkFetch("dogPic.jpg")); // 'dogPic.jpg - Response from cache'
